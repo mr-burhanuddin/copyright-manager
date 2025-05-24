@@ -3,21 +3,59 @@
   "displayName": "copyright-manager",
   "description": "Adds copyright headers and audit the stage files",
   "version": "0.0.1",
+  "publisher": "burhanuddin",
   "engines": {
     "vscode": "^1.100.0"
   },
+  "icon": "images/icon.png",
   "categories": [
-    "Other"
+    "Other",
+    "Formatters"
+  ],
+  "keywords": [
+    "copyright",
+    "license",
+    "header",
+    "git",
+    "audit",
+    "auditlogs",
+    "pre-commit"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "copyright-manager.helloWorld",
-        "title": "Hello World"
+        "command": "copyrightManager.addCopyright",
+        "title": "Add/Update Copyright"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Your Extension Settings",
+      "properties": {
+        "yourExtension.developerName": {
+          "type": "string",
+          "default": "",
+          "description": "Default developer name to use in copyright headers"
+        },
+        "yourExtension.organizationName": {
+          "type": "string",
+          "default": "Cygnus Compliance Consulting, Inc.",
+          "description": "Organization or company name used in copyright headers"
+        },
+        "yourExtension.copyrightTemplate": {
+          "type": "string",
+          "default": "/*\n**  File Name: {fileName}\n**\n**  Description: {purpose}\n**\n**  Author: {developerName}\n**  Creation Date: {creationDate}\n**\n... your full copyright template ...\n*/",
+          "description": "Template for the copyright text. Use placeholders: {fileName}, {purpose}, {developerName}, {creationDate}"
+        },
+        "yourExtension.enableAuditHistory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable adding audit (maintenance history) entries to existing files"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -31,19 +69,23 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "compile-fn": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --platform=node --external:vscode"
   },
   "devDependencies": {
-    "@types/vscode": "^1.100.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/vscode": "^1.100.0",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
-    "eslint": "^9.25.1",
-    "esbuild": "^0.25.3",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.8.3",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "esbuild": "^0.25.3",
+    "eslint": "^9.25.1",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "simple-git": "^3.27.0"
   }
 }

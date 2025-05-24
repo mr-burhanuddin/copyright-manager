@@ -1,71 +1,90 @@
-# copyright-manager README
+```md
+# 📌 Copyright Manager
 
-This is the README for your extension "copyright-manager". After writing up a brief description, we recommend including the following sections.
-
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+A Visual Studio Code extension that helps developers automatically insert or update customizable copyright headers in staged files, with optional purpose tracking and maintenance audit logs.
 
 ---
 
-## Following extension guidelines
+## ✨ Features
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+- ✅ Automatically adds a customizable copyright header
+- ✅ Inserts dynamic fields like:
+  - `{{fileName}}`
+  - `{{developerName}}`
+  - `{{organization}}`
+  - `{{year}}`
+  - `{{creationDate}}`
+  - `{{purpose}}`
+- ✅ Optionally appends audit trail when modifying files
+- ✅ Processes only **Git-staged** files (safe for version control)
+- ✅ All settings are configurable through VS Code's Settings UI
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+---
 
-## Working with Markdown
+## ⚙️ Extension Settings
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+You can customize the extension by going to:
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+> `Settings → Extensions → Copyright Manager`
 
-## For more information
+### Available Settings:
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+| Setting Name        | Description                                             |
+| ------------------- | ------------------------------------------------------- |
+| `developerName`     | Your name to appear in the copyright header             |
+| `organization`      | Optional organization or company name                   |
+| `copyrightTemplate` | Customizable header template with placeholders          |
+| `enableAudit`       | Toggle audit log for maintenance history (`true/false`) |
 
-**Enjoy!**
+---
+
+## 💡 Usage Instructions
+
+1. Stage your files using Git (`git add .`)
+2. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS)
+3. Run the command: `Add Copyright to Staged Files`
+4. If the file is new or audit is enabled, you’ll be prompted for the purpose
+
+That’s it! 🎉
+
+---
+
+## 🧩 Example Template (Copy & Paste)
+
+Use this as your default value for `copyrightTemplate`:
+
+/\*\*
+
+- @file {{fileName}}
+- @author {{developerName}}
+- @organization {{organization}}
+- @created {{creationDate}}
+- @copyright (c) {{year}} {{organization}}. All rights reserved.
+- @purpose {{purpose}}
+-
+- Maintenance History:
+- Date | Developer | Purpose
+- \------------|----------------|----------------------------------------------------
+  \*/
+
+---
+
+## 🚀 Future Plans
+
+- Add support for more file types and comment styles
+- Option to apply to non-staged or all project files
+- Per-project override for settings
+
+---
+
+## 📦 Requirements
+
+- Must have Git initialized (`git init`)
+- File must be staged (`git add file.ts`) before running the command
+
+---
+
+## 🪪 License
+
+MIT © [Your Name or Organization]
+```
