@@ -56,20 +56,51 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
+      // Separate files that need new copyright and those that have copyright already
+      const filesMissingCopyright: string[] = [];
+      const filesWithCopyright: string[] = [];
+
       for (const relativePath of stagedFiles) {
-        const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-        if (!rootPath) {
-          vscode.window.showErrorMessage("No workspace folder open.");
-          return;
-        }
-
-        const fullPath = path.join(rootPath, relativePath);
-
+        const fullPath = path.join(workspaceFolder, relativePath);
         if (!fs.existsSync(fullPath)) {
           vscode.window.showWarningMessage(`File not found: ${fullPath}`);
           continue;
         }
+        const content = fs.readFileSync(fullPath, "utf8");
+        if (content.includes(organization)) {
+          filesWithCopyright.push(relativePath);
+        } else {
+          filesMissingCopyright.push(relativePath);
+        }
+      }
 
+      // Ask for purpose only once for new copyright files if any
+      let newFilePurpose = "No purpose provided";
+      if (filesMissingCopyright.length > 0) {
+        const purposeInput = await vscode.window.showInputBox({
+          prompt: `Enter the purpose/description for new copyright (will apply to ${filesMissingCopyright.length} files)`,
+          placeHolder: "High-level purpose of the files",
+        });
+        if (purposeInput) {
+          newFilePurpose = purposeInput;
+        }
+      }
+
+      // Ask for audit purpose once if audit enabled and there are files with copyright
+      let auditPurpose = "No purpose provided";
+      if (enableAudit && filesWithCopyright.length > 0) {
+        const auditInput = await vscode.window.showInputBox({
+          prompt: `Enter the audit purpose/description for files with existing copyright (will apply to ${filesWithCopyright.length} files)`,
+          placeHolder: "Audit purpose",
+        });
+        if (auditInput) {
+          auditPurpose = auditInput;
+        }
+      }
+
+      // Process files missing copyright (add copyright + initial audit with newFilePurpose)
+      for (const relativePath of filesMissingCopyright) {
+        const fullPath = path.join(workspaceFolder, relativePath);
         try {
           await processFile(
             fullPath,
@@ -77,9 +108,32 @@ export function activate(context: vscode.ExtensionContext) {
             organization,
             copyrightText,
             copyrightTemplate,
-            enableAudit
+            enableAudit,
+            newFilePurpose,
+            true // isNewFile = true
           );
-          // Optionally stage the file again after modification
+          await git.add(relativePath);
+        } catch (error) {
+          vscode.window.showErrorMessage(
+            `Error processing file ${relativePath}: ${error}`
+          );
+        }
+      }
+
+      // Process files with copyright (add audit if enabled with auditPurpose)
+      for (const relativePath of filesWithCopyright) {
+        const fullPath = path.join(workspaceFolder, relativePath);
+        try {
+          await processFile(
+            fullPath,
+            developerName,
+            organization,
+            copyrightText,
+            copyrightTemplate,
+            enableAudit,
+            auditPurpose,
+            false // isNewFile = false
+          );
           await git.add(relativePath);
         } catch (error) {
           vscode.window.showErrorMessage(
@@ -123,7 +177,9 @@ async function processFile(
   organization: string,
   copyrightTextInput: string,
   template: string,
-  enableAudit: boolean
+  enableAudit: boolean,
+  purpose: string,
+  isNewFile: boolean
 ): Promise<void> {
   const fileName = path.basename(filePath);
   let fileContent = fs.readFileSync(filePath, "utf8");
@@ -132,17 +188,6 @@ async function processFile(
 
   const delimiterLine =
     "**  -------------|----------|----------------------------------------------------";
-
-  const isNewFile = !fileContent.includes(organization);
-
-  let purpose = "";
-  if (isNewFile || enableAudit) {
-    purpose =
-      (await vscode.window.showInputBox({
-        prompt: `Enter the purpose/description for file ${fileName}`,
-        placeHolder: "High-level purpose of the file",
-      })) || "No purpose provided";
-  }
 
   const auditLine = `**  ${today}  |  ${developerName}  |  ${purpose}`;
 
