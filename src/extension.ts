@@ -11,6 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
 
       const developerName = config.get<string>("developerName")?.trim();
       const organization = config.get<string>("organization")?.trim() ?? "";
+      const copyrightText = config.get<string>("copyrightText") ?? "";
       const copyrightTemplate = config.get<string>("copyrightTemplate") ?? "";
       const enableAudit = config.get<boolean>("enableAudit") ?? true;
 
@@ -30,8 +31,14 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      // Get staged files using simpleGit
-      const git = simpleGit();
+      const workspaceFolder =
+        vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!workspaceFolder) {
+        vscode.window.showErrorMessage("No workspace folder is open.");
+        return;
+      }
+
+      const git = simpleGit({ baseDir: workspaceFolder });
 
       let stagedFiles: string[];
       try {
@@ -68,6 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
             fullPath,
             developerName,
             organization,
+            copyrightText,
             copyrightTemplate,
             enableAudit
           );
@@ -87,73 +95,174 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
+function wrapWithPrefix(
+  text: string,
+  maxLineLength = 80,
+  prefix = "**  "
+): string {
+  const words = text.split(" ");
+  let line = "";
+  let result = "";
+
+  for (const word of words) {
+    if ((line + word).length > maxLineLength) {
+      result += prefix + line.trimEnd() + "\n";
+      line = "";
+    }
+    line += word + " ";
+  }
+  if (line.length > 0) {
+    result += prefix + line.trimEnd();
+  }
+  return result;
+}
+
 async function processFile(
   filePath: string,
   developerName: string,
   organization: string,
+  copyrightTextInput: string,
   template: string,
   enableAudit: boolean
 ): Promise<void> {
   const fileName = path.basename(filePath);
-  const fileContent = fs.readFileSync(filePath, "utf8");
+  let fileContent = fs.readFileSync(filePath, "utf8");
   const today = new Date().toISOString().split("T")[0];
   const year = new Date().getFullYear();
 
-  // Detect if file is new (doesn't contain your copyright marker)
+  const delimiterLine =
+    "**  -------------|----------|----------------------------------------------------";
+
   const isNewFile = !fileContent.includes(organization);
 
-  // Ask user for purpose only if new or audit is disabled
   let purpose = "";
-  if (isNewFile || !enableAudit) {
+  if (isNewFile || enableAudit) {
     purpose =
       (await vscode.window.showInputBox({
         prompt: `Enter the purpose/description for file ${fileName}`,
         placeHolder: "High-level purpose of the file",
-      })) || "";
-    if (!purpose) {
-      purpose = "No purpose provided";
-    }
+      })) || "No purpose provided";
   }
 
-  // Prepare copyright text with placeholders replaced
-  let copyrightText = template
-    .replace(/{{fileName}}/g, fileName)
-    .replace(/{{developerName}}/g, developerName)
-    .replace(/{{organization}}/g, organization)
-    .replace(/{{year}}/g, year.toString())
-    .replace(/{{creationDate}}/g, today)
-    .replace(/{{purpose}}/g, purpose);
+  const auditLine = `**  ${today}  |  ${developerName}  |  ${purpose}`;
 
   let updatedContent: string;
 
   if (isNewFile) {
-    // Append copyright text at end for new file
-    updatedContent = fileContent + "\n" + copyrightText;
+    const formattedText = wrapWithPrefix(copyrightTextInput, 80);
+    // Insert new block with first audit line
+    const copyrightBlock = template
+      .replace(/{{fileName}}/g, fileName)
+      .replace(/{{developerName}}/g, developerName)
+      .replace(/{{organizationName}}/g, organization)
+      .replace(/{{copyrightText}}/g, formattedText)
+      .replace(/{{year}}/g, year.toString())
+      .replace(/{{creationDate}}/g, today)
+      .replace(/{{purpose}}/g, purpose)
+      .replace(
+        /{{auditLog}}/g,
+        `\n${delimiterLine}\n${auditLine}\n${delimiterLine}`
+      );
+
+    updatedContent = `${fileContent}\n\n${copyrightBlock}\n`;
   } else if (enableAudit) {
-    // Insert audit/maintenance line before maintenance history table end
-    const auditLine = `${today}  |  ${developerName}  |  ${purpose}\n-------------|----------|----------------------------------------------------\n`;
+    // Insert new audit line at the bottom of the audit log
+    const delimiterIndices = [];
+    let index = fileContent.indexOf(delimiterLine);
+    while (index !== -1) {
+      delimiterIndices.push(index);
+      index = fileContent.indexOf(delimiterLine, index + 1);
+    }
 
-    const delimiterLine =
-      "-------------|----------|----------------------------------------------------";
-
-    const maintHistoryEnd = fileContent.lastIndexOf(delimiterLine);
-    if (maintHistoryEnd === -1) {
-      updatedContent = fileContent + "\n" + delimiterLine + "\n" + auditLine;
+    if (delimiterIndices.length >= 2) {
+      // Insert after the last delimiter (i.e., at the end of audit log)
+      const lastDelimiterIndex = delimiterIndices[delimiterIndices.length - 1];
+      const insertPosition = lastDelimiterIndex + delimiterLine.length;
+      fileContent =
+        fileContent.slice(0, insertPosition) +
+        `\n${auditLine}\n${delimiterLine}` +
+        fileContent.slice(insertPosition);
+      updatedContent = fileContent;
     } else {
-      const insertPos = maintHistoryEnd + delimiterLine.length;
-      updatedContent =
-        fileContent.slice(0, insertPos) +
-        "\n" +
-        auditLine +
-        fileContent.slice(insertPos);
+      // Fallback: just append it at the end
+      updatedContent = `${fileContent}\n${delimiterLine}\n${auditLine}\n${delimiterLine}`;
     }
   } else {
-    // Do nothing if audit disabled and file not new
     updatedContent = fileContent;
   }
 
   fs.writeFileSync(filePath, updatedContent, "utf8");
 }
+
+// async function processFile(
+//   filePath: string,
+//   developerName: string,
+//   organization: string,
+//   copyrightTextInput: string,
+//   template: string,
+//   enableAudit: boolean
+// ): Promise<void> {
+//   const fileName = path.basename(filePath);
+//   const fileContent = fs.readFileSync(filePath, "utf8");
+//   const today = new Date().toISOString().split("T")[0];
+//   const year = new Date().getFullYear();
+
+//   // Detect if file is new (doesn't contain your copyright marker)
+//   const isNewFile = !fileContent.includes(organization);
+
+//   // Ask user for purpose only if new or audit is disabled
+//   let purpose = "";
+//   if (isNewFile || !enableAudit) {
+//     purpose =
+//       (await vscode.window.showInputBox({
+//         prompt: `Enter the purpose/description for file ${fileName}`,
+//         placeHolder: "High-level purpose of the file",
+//       })) || "";
+//     if (!purpose) {
+//       purpose = "No purpose provided";
+//     }
+//   }
+
+//   // Prepare copyright text with placeholders replaced
+//   let copyrightText = template
+//     .replace(/{{fileName}}/g, fileName)
+//     .replace(/{{developerName}}/g, developerName)
+//     .replace(/{{organizationName}}/g, organization)
+//     .replace(/{{copyrightText}}/g, copyrightTextInput)
+//     .replace(/{{year}}/g, year.toString())
+//     .replace(/{{creationDate}}/g, today)
+//     .replace(/{{purpose}}/g, purpose);
+
+//   let updatedContent: string;
+
+//   const delimiterLine =
+//     "-------------|----------|----------------------------------------------------";
+
+//   if (isNewFile) {
+//     // Append copyright text at end for new file
+//     updatedContent = fileContent + "\n" + copyrightText + "\n" + delimiterLine;
+//   } else if (enableAudit) {
+//     // Insert audit/maintenance line before maintenance history table end
+//     const auditLine = `${today}  |  ${developerName}  |  ${purpose}\n-------------|----------|----------------------------------------------------\n`;
+
+//     const maintHistoryEnd = fileContent.lastIndexOf(delimiterLine);
+//     if (maintHistoryEnd === -1) {
+//       updatedContent = fileContent + "\n" + delimiterLine + "\n" + auditLine;
+//     } else {
+//       const insertPos = maintHistoryEnd + delimiterLine.length;
+//       updatedContent =
+//         fileContent.slice(0, insertPos) +
+//         "\n" +
+//         auditLine +
+//         fileContent.slice(insertPos);
+//     }
+//   } else {
+//     // Do nothing if audit disabled and file not new
+//     updatedContent = fileContent;
+//   }
+
+//   fs.writeFileSync(filePath, updatedContent, "utf8");
+// }
 
 // This method is called when your extension is deactivated
 export function deactivate() {}

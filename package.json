@@ -32,24 +32,29 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "Your Extension Settings",
+      "title": "copyrightManager",
       "properties": {
-        "yourExtension.developerName": {
+        "copyrightManager.developerName": {
           "type": "string",
           "default": "",
           "description": "Default developer name to use in copyright headers"
         },
-        "yourExtension.organizationName": {
+        "copyrightManager.organizationName": {
           "type": "string",
-          "default": "Cygnus Compliance Consulting, Inc.",
+          "default": "",
           "description": "Organization or company name used in copyright headers"
         },
-        "yourExtension.copyrightTemplate": {
+        "copyrightManager.copyrightText": {
           "type": "string",
-          "default": "/*\n**  File Name: {fileName}\n**\n**  Description: {purpose}\n**\n**  Author: {developerName}\n**  Creation Date: {creationDate}\n**\n... your full copyright template ...\n*/",
-          "description": "Template for the copyright text. Use placeholders: {fileName}, {purpose}, {developerName}, {creationDate}"
+          "default": "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.",
+          "description": "Copyright Text That You Want to Add In Each File"
         },
-        "yourExtension.enableAuditHistory": {
+        "copyrightManager.copyrightTemplate": {
+          "type": "string",
+          "default": "/*\n**  Organization: {{organizationName}}\n**\n**  File Name: {{fileName}}\n**\n**  Description: {{purpose}}\n**\n**  Author: {{developerName}}\n**  Creation Date: {{creationDate}}\n**\n**  © COPYRIGHT {{year}}\n{{copyrightText}}\n**\n**  Audit Logs (Change History):\n**{{auditLog}} \n*/",
+          "description": "Template for the copyright text. Use placeholders: {{fileName}}, {{purpose}}, {{developerName}}, {{creationDate}}, {{auditLog}}, {{organizationName}}, {{copyrightText}}"
+        },
+        "copyrightManager.enableAuditHistory": {
           "type": "boolean",
           "default": true,
           "description": "Enable adding audit (maintenance history) entries to existing files"
