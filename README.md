@@ -1,90 +1,88 @@
-```md
-# 📌 Copyright Manager
+# Copyright Manager VSCode Extension
 
-A Visual Studio Code extension that helps developers automatically insert or update customizable copyright headers in staged files, with optional purpose tracking and maintenance audit logs.
+Manage and automatically insert/update copyright headers and audit logs in your source files with ease.
 
----
+## Features
 
-## ✨ Features
+- Automatically add copyright headers to staged files (`.ts`, `.tsx`, `.js`, `.jsx`, `.css`).
+- Supports customizable copyright templates with placeholders.
+- Tracks file creation date, author, organization, and description.
+- Maintains audit logs (change history) in existing files.
+- Prompts for purpose/description when adding or updating headers.
+- Automatically stages modified files after update.
 
-- ✅ Automatically adds a customizable copyright header
-- ✅ Inserts dynamic fields like:
-  - `{{fileName}}`
-  - `{{developerName}}`
-  - `{{organization}}`
-  - `{{year}}`
-  - `{{creationDate}}`
-  - `{{purpose}}`
-- ✅ Optionally appends audit trail when modifying files
-- ✅ Processes only **Git-staged** files (safe for version control)
-- ✅ All settings are configurable through VS Code's Settings UI
+## Installation
 
----
+1. Install from the VSCode Marketplace or load the extension in your development environment.
+2. Configure the extension settings as described below.
 
-## ⚙️ Extension Settings
+## Configuration
 
-You can customize the extension by going to:
+Configure the extension via VSCode Settings (`Preferences > Settings`) under the `copyrightManager` section.
 
-> `Settings → Extensions → Copyright Manager`
+| Setting              | Type    | Default                       | Description                                                        |
+| -------------------- | ------- | ----------------------------- | ------------------------------------------------------------------ |
+| `developerName`      | String  | (empty)                       | Your developer name to include in copyright headers (required).    |
+| `organizationName`   | String  | (empty)                       | Your company or organization name to include in copyright headers. |
+| `copyrightText`      | String  | License text (MIT by default) | The copyright/license text you want included in each file.         |
+| `copyrightTemplate`  | String  | Default template (see below)  | Template for copyright block with placeholders.                    |
+| `enableAuditHistory` | Boolean | `true`                        | Enable audit (change history) entries for existing files.          |
 
-### Available Settings:
+### Default Copyright Template
 
-| Setting Name        | Description                                             |
-| ------------------- | ------------------------------------------------------- |
-| `developerName`     | Your name to appear in the copyright header             |
-| `organization`      | Optional organization or company name                   |
-| `copyrightTemplate` | Customizable header template with placeholders          |
-| `enableAudit`       | Toggle audit log for maintenance history (`true/false`) |
-
----
-
-## 💡 Usage Instructions
-
-1. Stage your files using Git (`git add .`)
-2. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS)
-3. Run the command: `Add Copyright to Staged Files`
-4. If the file is new or audit is enabled, you’ll be prompted for the purpose
-
-That’s it! 🎉
-
----
-
-## 🧩 Example Template (Copy & Paste)
-
-Use this as your default value for `copyrightTemplate`:
-
-/\*\*
-
-- @file {{fileName}}
-- @author {{developerName}}
-- @organization {{organization}}
-- @created {{creationDate}}
-- @copyright (c) {{year}} {{organization}}. All rights reserved.
-- @purpose {{purpose}}
--
-- Maintenance History:
-- Date | Developer | Purpose
-- \------------|----------------|----------------------------------------------------
-  \*/
-
----
-
-## 🚀 Future Plans
-
-- Add support for more file types and comment styles
-- Option to apply to non-staged or all project files
-- Per-project override for settings
-
----
-
-## 📦 Requirements
-
-- Must have Git initialized (`git init`)
-- File must be staged (`git add file.ts`) before running the command
-
----
-
-## 🪪 License
-
-MIT © [Your Name or Organization]
+```plaintext
+/*
+**  Organization: {{organizationName}}
+**
+**  File Name: {{fileName}}
+**
+**  Description: {{purpose}}
+**
+**  Author: {{developerName}}
+**  Creation Date: {{creationDate}}
+**
+**  © COPYRIGHT {{year}}
+{{copyrightText}}
+**
+**  Audit Logs (Change History):
+**{{auditLog}}
+*/
 ```
+
+Use placeholders in the template:
+
+- `{{fileName}}`
+- `{{purpose}}` (description provided when adding/updating)
+- `{{developerName}}`
+- `{{creationDate}}`
+- `{{auditLog}}`
+- `{{organizationName}}`
+- `{{copyrightText}}`
+
+## Usage
+
+1. Stage your code changes in Git (`git add <files>`).
+2. Run the command **Add/Update Copyright** from the command palette (`Ctrl+Shift+P` or `Cmd+Shift+P`).
+3. Confirm if you want to add/update copyright headers in the staged files.
+4. For new files or when audit is enabled, enter a brief purpose/description when prompted.
+5. The extension updates the copyright headers and audit logs in the staged files.
+6. Modified files are automatically re-staged for commit.
+
+## Notes
+
+- Only staged files with extensions `.ts`, `.tsx`, `.js`, `.jsx`, and `.css` are processed.
+- If no developer name is configured, the extension will show an error and stop.
+- Audit history logs changes with date, developer name, and purpose.
+- The extension appends audit logs between delimiter lines in the file.
+
+## Development & Contribution
+
+Feel free to contribute or report issues via the repository.
+
+## License
+
+[MIT License](LICENSE)
+
+---
+
+If you want, I can also help you generate the markdown for your extension’s `README.md` file with badges, example screenshots, or publishing instructions. Just let me know!
