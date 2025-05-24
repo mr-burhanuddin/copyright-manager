@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
       const organization = config.get<string>("organization")?.trim() ?? "";
       const copyrightText = config.get<string>("copyrightText") ?? "";
       const copyrightTemplate = config.get<string>("copyrightTemplate") ?? "";
-      const enableAudit = config.get<boolean>("enableAudit") ?? true;
+      const enableAudit = config.get<boolean>("enableAuditHistory") ?? true;
 
       if (!developerName) {
         vscode.window.showErrorMessage(
@@ -193,76 +193,6 @@ async function processFile(
 
   fs.writeFileSync(filePath, updatedContent, "utf8");
 }
-
-// async function processFile(
-//   filePath: string,
-//   developerName: string,
-//   organization: string,
-//   copyrightTextInput: string,
-//   template: string,
-//   enableAudit: boolean
-// ): Promise<void> {
-//   const fileName = path.basename(filePath);
-//   const fileContent = fs.readFileSync(filePath, "utf8");
-//   const today = new Date().toISOString().split("T")[0];
-//   const year = new Date().getFullYear();
-
-//   // Detect if file is new (doesn't contain your copyright marker)
-//   const isNewFile = !fileContent.includes(organization);
-
-//   // Ask user for purpose only if new or audit is disabled
-//   let purpose = "";
-//   if (isNewFile || !enableAudit) {
-//     purpose =
-//       (await vscode.window.showInputBox({
-//         prompt: `Enter the purpose/description for file ${fileName}`,
-//         placeHolder: "High-level purpose of the file",
-//       })) || "";
-//     if (!purpose) {
-//       purpose = "No purpose provided";
-//     }
-//   }
-
-//   // Prepare copyright text with placeholders replaced
-//   let copyrightText = template
-//     .replace(/{{fileName}}/g, fileName)
-//     .replace(/{{developerName}}/g, developerName)
-//     .replace(/{{organizationName}}/g, organization)
-//     .replace(/{{copyrightText}}/g, copyrightTextInput)
-//     .replace(/{{year}}/g, year.toString())
-//     .replace(/{{creationDate}}/g, today)
-//     .replace(/{{purpose}}/g, purpose);
-
-//   let updatedContent: string;
-
-//   const delimiterLine =
-//     "-------------|----------|----------------------------------------------------";
-
-//   if (isNewFile) {
-//     // Append copyright text at end for new file
-//     updatedContent = fileContent + "\n" + copyrightText + "\n" + delimiterLine;
-//   } else if (enableAudit) {
-//     // Insert audit/maintenance line before maintenance history table end
-//     const auditLine = `${today}  |  ${developerName}  |  ${purpose}\n-------------|----------|----------------------------------------------------\n`;
-
-//     const maintHistoryEnd = fileContent.lastIndexOf(delimiterLine);
-//     if (maintHistoryEnd === -1) {
-//       updatedContent = fileContent + "\n" + delimiterLine + "\n" + auditLine;
-//     } else {
-//       const insertPos = maintHistoryEnd + delimiterLine.length;
-//       updatedContent =
-//         fileContent.slice(0, insertPos) +
-//         "\n" +
-//         auditLine +
-//         fileContent.slice(insertPos);
-//     }
-//   } else {
-//     // Do nothing if audit disabled and file not new
-//     updatedContent = fileContent;
-//   }
-
-//   fs.writeFileSync(filePath, updatedContent, "utf8");
-// }
 
 // This method is called when your extension is deactivated
 export function deactivate() {}
