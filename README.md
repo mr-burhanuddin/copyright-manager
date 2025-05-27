@@ -27,7 +27,7 @@ Configure the extension via VSCode Settings (`Preferences > Settings`) under the
 | `copyrightText`      | String  | License text (MIT by default) | The copyright/license text you want included in each file.         |
 | `copyrightTemplate`  | String  | Default template (see below)  | Template for copyright block with placeholders.                    |
 | `enableAuditHistory` | Boolean | `true`                        | Enable audit (change history) entries for existing files.          |
-| `filePattern`        | String  | `\\.(ts|tsx|jsx|js|css)$`     | Regex pattern to match file extensions for processing              |
+| `filePattern`        | String  | `\.(ts|tsx|jsx|js|css)$`      | Regex pattern to match file extensions for processing              |
 
 ### Default Copyright Template
 
