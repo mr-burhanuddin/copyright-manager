@@ -2,7 +2,7 @@
   "name": "copyright-manager",
   "displayName": "copyright-manager",
   "description": "Adds copyright headers and audit the stage files",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "publisher": "mr-burhanuddin",
   "engines": {
     "vscode": "^1.100.0"
