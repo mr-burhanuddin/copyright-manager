@@ -14,6 +14,8 @@ export function activate(context: vscode.ExtensionContext) {
       const copyrightText = config.get<string>("copyrightText") ?? "";
       const copyrightTemplate = config.get<string>("copyrightTemplate") ?? "";
       const enableAudit = config.get<boolean>("enableAuditHistory") ?? true;
+      const patternString =
+        config.get<string>("filePattern") || "\\.(ts|tsx|jsx|js|css)$";
 
       if (!developerName) {
         vscode.window.showErrorMessage(
@@ -41,11 +43,18 @@ export function activate(context: vscode.ExtensionContext) {
       const git = simpleGit({ baseDir: workspaceFolder });
 
       let stagedFiles: string[];
+      let regex: RegExp;
+      try {
+        regex = new RegExp(patternString);
+      } catch (e) {
+        vscode.window.showErrorMessage(
+          "Invalid regex in 'copyrightManager.filePattern'"
+        );
+        return;
+      }
       try {
         const status = await git.status();
-        stagedFiles = status.staged.filter((file) =>
-          /\.(ts|tsx|jsx|js|css)$/.test(file)
-        );
+        stagedFiles = status.staged.filter((file) => regex.test(file));
       } catch (e) {
         vscode.window.showErrorMessage("Error accessing git status: " + e);
         return;

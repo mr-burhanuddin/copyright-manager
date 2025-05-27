@@ -66,6 +66,11 @@
           "type": "boolean",
           "default": true,
           "description": "Enable adding audit (maintenance history) entries to existing files"
+        },
+        "copyrightManager.filePattern": {
+          "type": "string",
+          "default": "\\.(ts|tsx|jsx|js|css)$",
+          "description": "Regex pattern to match file extensions for processing"
         }
       }
     }

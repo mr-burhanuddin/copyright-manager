@@ -4,7 +4,7 @@ Manage and automatically insert/update copyright headers and audit logs in your 
 
 ## Features
 
-- Automatically add copyright headers to staged files (`.ts`, `.tsx`, `.js`, `.jsx`, `.css`).
+- Automatically add copyright headers to staged files (regex file pattern).
 - Supports customizable copyright templates with placeholders.
 - Tracks file creation date, author, organization, and description.
 - Maintains audit logs (change history) in existing files.
@@ -58,6 +58,7 @@ Use placeholders in the template:
 - `{{auditLog}}`
 - `{{organizationName}}`
 - `{{copyrightText}}`
+- `{{filePattern}}` (regex pattern to match the files)
 
 ## Usage
 
@@ -70,7 +71,7 @@ Use placeholders in the template:
 
 ## Notes
 
-- Only staged files with extensions `.ts`, `.tsx`, `.js`, `.jsx`, and `.css` are processed.
+- Only staged files with matching {{filePattern}} are processed.
 - If no developer name is configured, the extension will show an error and stop.
 - Audit history logs changes with date, developer name, and purpose.
 - The extension appends audit logs between delimiter lines in the file.
@@ -82,7 +83,3 @@ Feel free to contribute or report issues via the repository.
 ## License
 
 [MIT License](LICENSE)
-
----
-
-If you want, I can also help you generate the markdown for your extension’s `README.md` file with badges, example screenshots, or publishing instructions. Just let me know!
