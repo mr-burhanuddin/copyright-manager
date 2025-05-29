@@ -83,4 +83,4 @@ Feel free to contribute or report issues via the repository.
 
 ## License
 
-[MIT License](LICENSE)
+This extension is licensed under the [MIT License](./LICENSE).
